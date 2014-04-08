@@ -14,7 +14,7 @@ srv_app="$BASE/src/jboss_inside"
 usage() {
 cat <<EOF
 
-Usage: $0 start|stop|rm|status|build jb6|jb5|splunk
+Usage: $0 start|stop|rm|status|build|ssh jb6|jb5|splunk
 
 EOF
 }
@@ -70,6 +70,27 @@ c_rm() {
 		*) echo "Unknown container $1" 1>&2;;
 	esac
 }
+c_build() {
+	local c=$1
+	case $c in
+		all) for c in $containers;do echo "Building $c";docker build -t $c $BASE/$c;done;;
+		splunk|jb5|jb6) docker build -t $c $BASE/$c ;;
+		*) echo "Unknown container $1" 1>&2;;
+	esac
+}
+c_ssh() {
+	local c=$1
+	if [ $c = "all" ];then
+		echo "You need to specify one container: $containers"
+		return 1
+	fi
+	local port=$(docker port $c 22|awk -F:  '{print $2}')
+	if [ -z "$port" ];then
+		echo "Unable to determine port.." 1>&2
+		return 1
+	fi
+	ssh -oStrictHostKeyChecking=no localhost -lroot -p$port
+}
 
 cmd=$1
 arg=${2:-all}
@@ -81,7 +102,9 @@ case ${1:-none} in
 	start) c_start $arg ;;
 	stop) c_stop $arg ;;
 	rm) c_rm $arg ;;
+	ssh) c_ssh $arg ;;
 	status) docker ps ;;
+	build) docker ps ;;
 	*) usage; exit 2 ;;
 esac
 
