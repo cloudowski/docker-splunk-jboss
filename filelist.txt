@@ -1,0 +1,9 @@
+Download the following files and put them in proper directories.
+
+./jboss5/files/jboss-eap-5.2.0.zip
+./jboss5/files/splunkforwarder-6.0.2-196940-linux-2.6-x86_64.rpm
+./jboss5/files/jdk-6u45-linux-x64-rpm.bin
+./jboss6/files/splunkforwarder-6.0.2-196940-linux-2.6-x86_64.rpm
+./jboss6/files/jdk-6u45-linux-x64-rpm.bin
+./jboss6/files/jboss-eap-6.2.0.zip
+./splunk/files/splunk-6.0.1-189883-linux-2.6-x86_64.rpm
