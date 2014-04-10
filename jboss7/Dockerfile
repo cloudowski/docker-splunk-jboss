@@ -1,15 +1,12 @@
 FROM fedora
 
-# Create the management user
-#RUN /usr/share/wildfly/bin/add-user.sh admin admin --silent
-
 RUN yum -y install unzip 
 
-ADD files/jboss-eap-6.2.0.zip /root/
-RUN unzip -d /opt/ /root/jboss-eap-6.2.0.zip 
+ADD files/jboss-as-7.1.1.Final.zip /root/
+RUN unzip -d /opt/ /root/jboss-as-7.1.1.Final.zip
 
-ADD files/jdk-6u45-linux-x64-rpm.bin /root/
-RUN chmod +x /root/jdk-6u45-linux-x64-rpm.bin && /root/jdk-6u45-linux-x64-rpm.bin
+ADD files/jdk-7u51-linux-x64.rpm /root/
+RUN rpm -Uvh /root/jdk-7u51-linux-x64.rpm
 
 RUN yum -y install tcpdump screen && sed -i 's/^# \(caption always.*\)/\1/' /etc/screenrc
 

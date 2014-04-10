@@ -1,5 +1,6 @@
-Download the following files and put them in proper directories.
-
+./jboss7/files/jdk-7u51-linux-x64.rpm
+./jboss7/files/jboss-as-7.1.1.Final.zip
+./jboss7/files/splunkforwarder-6.0.2-196940-linux-2.6-x86_64.rpm
 ./jboss5/files/jboss-eap-5.2.0.zip
 ./jboss5/files/splunkforwarder-6.0.2-196940-linux-2.6-x86_64.rpm
 ./jboss5/files/jdk-6u45-linux-x64-rpm.bin

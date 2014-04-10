@@ -2,7 +2,7 @@
 
 
 # all containers
-containers="splunk jb5 jb6"
+containers="splunk jb5 jb6 jb7"
 
 # path to apps
 BASE=$(cd $(dirname $0);pwd)
@@ -14,7 +14,13 @@ srv_app="$BASE/src/jboss_inside"
 usage() {
 cat <<EOF
 
-Usage: $0 start|stop|rm|status|build|ssh jb6|jb5|splunk
+Usage: $0 start|stop|restart|rm|status|build|ssh CONTAINER
+
+where
+
+CONTAINER can be one of the following:
+
+$containers
 
 EOF
 }
@@ -34,7 +40,7 @@ start_splunk() {
 start_jb() {
 	local ver=$1
 	echo -n "Starting JBoss $ver"
-	fwd_id=$(docker run -P -d -t --name jb${ver} --link splunk:splunk -v $fwd_app:/opt/splunkforwarder/etc/apps/jboss_ta jboss${ver})
+	fwd_id=$(docker run -P -d -t --name jb${ver} --link splunk:splunk -v $fwd_app:/opt/splunkforwarder/etc/apps/ta-jboss jboss${ver})
 	if [ $? -eq 0 ];then
 		echo " ..started: $fwd_id"
 		return 0
@@ -45,28 +51,28 @@ start_jb() {
 }
 
 c_start() {
-	case $1 in
+	local c=$1
+	case $c in
 		splunk) start_splunk;;
-		jb5) start_jb 5;;
-		jb6) start_jb 6;;
+		jb*) start_jb ${c##jb} ;;
 		*) echo "Unknown container $1" 1>&2;;
 	esac
 }
 c_stop() {
-	case $1 in
+	local c=$1
+	case $c in
 		all) for c in $containers;do echo "Stoppping $c";docker stop $c;done;;
 		splunk) docker stop splunk ;;
-		jb5) docker stop jb5 ;;
-		jb6) docker stop jb6 ;;
+		jb*) docker stop $c ;;
 		*) echo "Unknown container $1" 1>&2;;
 	esac
 }
 c_rm() {
-	case $1 in
+	local c=$1
+	case $c in
 		all) for c in $containers;do echo "Removing $c";docker rm $c;done;;
 		splunk) docker rm splunk ;;
-		jb5) docker rm jb5 ;;
-		jb6) docker rm jb6 ;;
+		jb*) docker rm $c;;
 		*) echo "Unknown container $1" 1>&2;;
 	esac
 }
@@ -74,7 +80,7 @@ c_build() {
 	local c=$1
 	case $c in
 		all) for c in $containers;do echo "Building $c";docker build -t $c $BASE/$c;done;;
-		splunk|jb5|jb6) docker build -t $c $BASE/$c ;;
+		splunk|jboss*) docker build -t $c $BASE/$c ;;
 		*) echo "Unknown container $1" 1>&2;;
 	esac
 }
@@ -89,7 +95,7 @@ c_ssh() {
 		echo "Unable to determine port.." 1>&2
 		return 1
 	fi
-	ssh -oStrictHostKeyChecking=no localhost -lroot -p$port
+	ssh -oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no localhost -lroot -p$port
 }
 
 cmd=$1
@@ -100,11 +106,12 @@ arg=${2:-all}
 
 case ${1:-none} in
 	start) c_start $arg ;;
+	restart) c_stop $arg;c_rm $arg;c_start $arg ;;
 	stop) c_stop $arg ;;
 	rm) c_rm $arg ;;
 	ssh) c_ssh $arg ;;
 	status) docker ps ;;
-	build) docker ps ;;
+	build) c_build $arg ;;
 	*) usage; exit 2 ;;
 esac
 
