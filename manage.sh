@@ -2,7 +2,7 @@
 
 
 # all containers
-containers="splunk jb5 jb6"
+containers="splunk jb5 jb6 jb7"
 
 # path to apps
 BASE=$(cd $(dirname $0);pwd)
@@ -14,7 +14,13 @@ srv_app="$BASE/src/jboss_inside"
 usage() {
 cat <<EOF
 
-Usage: $0 start|stop|rm|status|build|ssh jb6|jb5|splunk
+Usage: $0 start|stop|rm|status|build|ssh CONTAINER
+
+where
+
+CONTAINER can be one of the following:
+
+$containers
 
 EOF
 }
@@ -45,28 +51,28 @@ start_jb() {
 }
 
 c_start() {
-	case $1 in
+	local c=$1
+	case $c in
 		splunk) start_splunk;;
-		jb5) start_jb 5;;
-		jb6) start_jb 6;;
+		jb*) start_jb ${c##jb} ;;
 		*) echo "Unknown container $1" 1>&2;;
 	esac
 }
 c_stop() {
-	case $1 in
+	local c=$1
+	case $c in
 		all) for c in $containers;do echo "Stoppping $c";docker stop $c;done;;
 		splunk) docker stop splunk ;;
-		jb5) docker stop jb5 ;;
-		jb6) docker stop jb6 ;;
+		jb*) docker stop ${c##jb} ;;
 		*) echo "Unknown container $1" 1>&2;;
 	esac
 }
 c_rm() {
-	case $1 in
+	local c=$1
+	case $c in
 		all) for c in $containers;do echo "Removing $c";docker rm $c;done;;
 		splunk) docker rm splunk ;;
-		jb5) docker rm jb5 ;;
-		jb6) docker rm jb6 ;;
+		jb*) docker rm ${c##jb} ;;
 		*) echo "Unknown container $1" 1>&2;;
 	esac
 }
@@ -74,7 +80,7 @@ c_build() {
 	local c=$1
 	case $c in
 		all) for c in $containers;do echo "Building $c";docker build -t $c $BASE/$c;done;;
-		splunk|jb5|jb6) docker build -t $c $BASE/$c ;;
+		splunk|jboss*) docker build -t $c $BASE/$c ;;
 		*) echo "Unknown container $1" 1>&2;;
 	esac
 }
@@ -104,7 +110,7 @@ case ${1:-none} in
 	rm) c_rm $arg ;;
 	ssh) c_ssh $arg ;;
 	status) docker ps ;;
-	build) docker ps ;;
+	build) c_build $arg ;;
 	*) usage; exit 2 ;;
 esac
 
