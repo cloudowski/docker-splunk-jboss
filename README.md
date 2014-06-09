@@ -4,7 +4,7 @@ It is a development environment for jboss and splunk. It contains docker definit
 
 # Usage
 
-1. Download necessary files - see filelist.txt
+1. Download necessary files - see filelist.txt. 
 
 2. Build images for each of containers 
 

@@ -8,3 +8,5 @@
 ./jboss6/files/jdk-6u45-linux-x64-rpm.bin
 ./jboss6/files/jboss-eap-6.2.0.zip
 ./splunk/files/splunk-6.0.1-189883-linux-2.6-x86_64.rpm
+base/files/splunkforwarder-6.0.2-196940-linux-2.6-x86_64.rpm
+liferay/files/liferay-portal-jboss-6.2-ce-ga2-20140319114139101.zip

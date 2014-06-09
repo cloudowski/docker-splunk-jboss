@@ -1,15 +1,15 @@
 #!/bin/bash
 
-
 # all containers
-containers="splunk jb5 jb6 jb7"
+containers="base splunk jboss5 jboss6 jboss7 liferay"
+
+# images prefix
+img_prefix='slashroot'
 
 # path to apps
 BASE=$(cd $(dirname $0);pwd)
 fwd_app="$BASE/src/ta-jboss"
 srv_app="$BASE/src/jboss_inside"
-
-
 
 usage() {
 cat <<EOF
@@ -27,7 +27,7 @@ EOF
 
 start_splunk() {
 	echo -n "Starting splunk server"
-	srv_id=$(docker run -t -P --name splunk -d -v $srv_app:/opt/splunk/etc/apps/jboss_app splunk)
+	srv_id=$(docker run -t -P --name splunk -d -v $srv_app:/opt/splunk/etc/apps/jboss_app slashroot/splunk)
 	if [ $? -eq 0 ];then
 		echo " ..started: $srv_id"
 		return 0
@@ -39,8 +39,8 @@ start_splunk() {
 
 start_jb() {
 	local ver=$1
-	echo -n "Starting JBoss $ver"
-	fwd_id=$(docker run -P -d -t --name jb${ver} --link splunk:splunk -v $fwd_app:/opt/splunkforwarder/etc/apps/ta-jboss jboss${ver})
+	echo -n "Starting $ver"
+	fwd_id=$(docker run -P -d -t --name ${ver} --link splunk:splunk -v $fwd_app:/opt/splunkforwarder/etc/apps/ta-jboss $img_prefix/${ver})
 	if [ $? -eq 0 ];then
 		echo " ..started: $fwd_id"
 		return 0
@@ -50,46 +50,50 @@ start_jb() {
 	fi
 }
 
+c_isvalid() {
+    local c=$1
+    for i in $containers;do
+        [ $i = $c ] && return 0
+    done
+    echo "Container $c does not exist" 1>&2
+    return 1
+}
+
 c_start() {
 	local c=$1
+    c_isvalid $c || return 1
 	case $c in
 		splunk) start_splunk;;
-		jb*) start_jb ${c##jb} ;;
-		*) echo "Unknown container $1" 1>&2;;
+		*) start_jb ${c} ;;
 	esac
 }
 c_stop() {
 	local c=$1
+    c_isvalid $c || return 1
 	case $c in
 		all) for c in $containers;do echo "Stoppping $c";docker stop $c;done;;
-		splunk) docker stop splunk ;;
-		jb*) docker stop $c ;;
-		*) echo "Unknown container $1" 1>&2;;
+		*) docker stop $c ;;
 	esac
 }
 c_rm() {
 	local c=$1
+    c_isvalid $c || return 1
 	case $c in
 		all) for c in $containers;do echo "Removing $c";docker rm $c;done;;
-		splunk) docker rm splunk ;;
-		jb*) docker rm $c;;
-		*) echo "Unknown container $1" 1>&2;;
+		*) docker rm $c;;
 	esac
 }
 c_build() {
 	local c=$1
+    c_isvalid $c || return 1
 	case $c in
-		all) for c in $containers;do echo "Building $c";docker build -t $c $BASE/$c;done;;
-		splunk|jboss*) docker build -t $c $BASE/$c ;;
-		*) echo "Unknown container $1" 1>&2;;
+		all) for i in $containers;do echo "Building $c";c_build $i;done;;
+		*) docker build -t slashroot/$c $BASE/$c ;;
 	esac
 }
 c_ssh() {
 	local c=$1
-	if [ $c = "all" ];then
-		echo "You need to specify one container: $containers"
-		return 1
-	fi
+    c_isvalid $c || return 1
 	local port=$(docker port $c 22|awk -F:  '{print $2}')
 	if [ -z "$port" ];then
 		echo "Unable to determine port.." 1>&2
