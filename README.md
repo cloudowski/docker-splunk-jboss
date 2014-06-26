@@ -26,4 +26,4 @@ or selected
 	./manage.sh start splunk
 `
 
-See **splunk/README.txt** for details on how to control splunk configuration using environemnt variables.
+See **splunk/README.txt** for details on how to control splunk configuration using environment variables.
