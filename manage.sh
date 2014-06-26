@@ -88,7 +88,7 @@ c_build() {
     c_isvalid $c || return 1
 	case $c in
 		all) for i in $containers;do echo "Building $c";c_build $i;done;;
-		*) docker build -t slashroot/$c $BASE/$c ;;
+		*) docker build -t slashroot/$c "$BASE/$c" ;;
 	esac
 }
 c_ssh() {
