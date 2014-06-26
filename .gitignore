@@ -1,3 +1,5 @@
+*.rpm
+*.zip
 src/*
 jboss5/files/jboss-eap-5.2.0.zip
 jboss5/files/splunkforwarder-6.0.2-196940-linux-2.6-x86_64.rpm

@@ -19,9 +19,6 @@ splunk edit user admin -password admin -auth admin:changeme
 # enable receiver
 splunk enable listen 9997 -auth admin:admin
 
-# add index jboss
-splunk add index jboss -auth admin:admin
-
 echo "IP: $IPADDR"
 
 tail -f $S/var/log/splunk/splunkd.log
